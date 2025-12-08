@@ -51,6 +51,21 @@ void applyHannWindow(CArray& samples){
     }
 }
 
+void applyFlatTopWindow(CArray& samples){
+    /*
+    Using coefficients from the matlab implementation:
+    https://www.mathworks.com/help/signal/ref/flattopwin.html
+    */
+    for (int i = 0; i < samples.size(); i++){
+        double multiplier = 0.21557895
+            - 0.41663158 * cos(2 * M_PI * i / (samples.size() - 1))
+            + 0.277263158 * cos(4 * M_PI * i / (samples.size() - 1))
+            - 0.083578947 * cos(6 * M_PI * i / (samples.size() - 1))
+            + 0.006947368 * cos(8 * M_PI * i / (samples.size() - 1));
+        samples[i] *= multiplier;
+    }
+}
+
 void fft(CArray& samples){
     int N = samples.size();
 
@@ -84,7 +99,7 @@ void processFFT(){
             fftQueue.pop();
         }
 
-        applyHannWindow(frame);
+        applyFlatTopWindow(frame);
         fft(frame);
 
         // Find the fundamental frequency (peak magnitude)
