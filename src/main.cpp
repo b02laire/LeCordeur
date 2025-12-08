@@ -10,10 +10,6 @@
 #define SAMPLE_RATE 48000
 #define FRAMES_PER_BUFFER 4096
 
-
-
-
-
 using Complex = std::complex<double>;
 using CArray = std::vector<Complex>;
 std::atomic<bool> isRecording = false;
@@ -31,12 +27,11 @@ static int paCallback(
     const PaStreamCallbackTimeInfo* timeInfo,
     PaStreamCallbackFlags statusFlags,
     void* userData
-)
-{
+){
     auto samples = static_cast<const float*>(inputBuffer);
     CArray frame(framesPerBuffer);
 
-    for(unsigned long i = 0; i < framesPerBuffer; i++){
+    for (unsigned long i = 0; i < framesPerBuffer; i++){
         frame[i] = {samples[i], 0.0};
     }
 
@@ -71,23 +66,20 @@ void fft(CArray& samples){
     fft(even);
     fft(odd);
 
-    for (int k = 0; k < N / 2-1; k++){
-
+    for (int k = 0; k < N / 2 - 1; k++){
         //Complex t = exp(-2*M_1_PI*k/N) * odd[k];
         Complex t = odd[k] * std::polar(1.0, -2.0 * M_PI * k / N);
         samples[k] = even[k] + t;
-        samples[k+N/2] = even[k] - t;
+        samples[k + N / 2] = even[k] - t;
     }
 }
 
-void processFFT()
-{
-    while(isRecording)
-    {
+void processFFT(){
+    while (isRecording){
         CArray frame;
         {
             std::lock_guard<std::mutex> lock(queueMutex);
-            if(fftQueue.empty()) continue;
+            if (fftQueue.empty()) continue;
             frame = fftQueue.front();
             fftQueue.pop();
         }
@@ -99,9 +91,10 @@ void processFFT()
         double maxMagnitude = 0.0;
         int maxIndex = 0;
 
-        for(int i = 1; i < frame.size() / 2; i++){  // Start at 1 to skip DC, go to Nyquist
+        for (int i = 1; i < frame.size() / 2; i++){
+            // Start at 1 to skip DC, go to Nyquist
             double magnitude = std::abs(frame[i]);
-            if(magnitude > maxMagnitude){
+            if (magnitude > maxMagnitude){
                 maxMagnitude = magnitude;
                 maxIndex = i;
             }
@@ -110,7 +103,8 @@ void processFFT()
         // Convert bin index to frequency
         double fundamentalFreq = maxIndex * SAMPLE_RATE / frame.size();
 
-        std::cout << "Fundamental: " << fundamentalFreq << " Hz\n";
+        std::cout << "\rFundamental: " << fundamentalFreq << " Hz           ";
+        std::cout.flush();
     }
 }
 
@@ -149,16 +143,19 @@ int main(){
     std::thread processingThread(processFFT);
 
     std::cout << "Recording... Press Enter to stop.\n";
+    std::cout << "Standard Tuning:\n";
+
+    std::cout <<
+        "E 82.41 Hz | A 110.00 Hz | D 146.83 Hz | G 196.00 Hz | B 246.94 Hz | E 329.63 Hz\n";
     err = Pa_StartStream(stream);
 
-    std::cin.get();  // Wait for Enter
+    std::cin.get(); // Wait for Enter
 
-    isRecording = false;  // Signal thread to stop
-    processingThread.join();  // Wait for thread to finish
+    isRecording = false; // Signal thread to stop
+    processingThread.join(); // Wait for thread to finish
 
 
     Pa_Terminate();
-
 
 
     return 0;
