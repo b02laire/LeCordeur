@@ -8,6 +8,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(PkgConfig)
 pkg_check_modules(PortAudio REQUIRED portaudio-2.0)
 
-add_executable(LeCordeur src/main.cpp)
+add_executable(LeCordeur
+        src/main.cpp
+        src/dsp.cpp
+        src/config.cpp)
 target_link_libraries(LeCordeur PRIVATE ${PortAudio_LIBRARIES})
-target_include_directories(LeCordeur PRIVATE ${PortAudio_INCLUDE_DIRS})
+target_include_directories(LeCordeur PRIVATE ${PortAudio_INCLUDE_DIRS}
+                           LeCordeur PRIVATE include)
