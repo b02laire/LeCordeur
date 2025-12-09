@@ -79,13 +79,6 @@ int main(){
         return 1;
     }
 
-    // Print available devices
-    int numDevices = Pa_GetDeviceCount();
-    for (int i = 0; i < numDevices; i++){
-        const PaDeviceInfo* deviceInfo = Pa_GetDeviceInfo(i);
-        std::cout << i << ": " << deviceInfo->name << "\n";
-    }
-
     // Open the stream with the callback
     PaStream* stream;
     err = Pa_OpenDefaultStream(
@@ -103,6 +96,13 @@ int main(){
         return 1;
     }
 
+    err = Pa_StartStream(stream);
+
+    if (err != paNoError){
+        std::cerr << "PortAudio error: " << Pa_GetErrorText(err) << "\n";
+        return 1;
+    }
+
     isRecording = true;
     std::thread processingThread(processFFT);
 
@@ -111,7 +111,7 @@ int main(){
 
     std::cout <<
         "E 82.41 Hz | A 110.00 Hz | D 146.83 Hz | G 196.00 Hz | B 246.94 Hz | E 329.63 Hz\n";
-    err = Pa_StartStream(stream);
+
 
     std::cin.get(); // Wait for Enter
 
