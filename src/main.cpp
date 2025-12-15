@@ -4,14 +4,12 @@
 #include <cmath>
 #include <complex>
 #include <thread>
-#include <queue>
-#include <mutex>
 #include "config.hpp"
 #include "dsp.hpp"
+#include "ring_buffer.hpp"
 
 
-std::queue<CArray> fftQueue;
-std::mutex queueMutex;
+ring_buffer audioBuffer(FRAMES_PER_BUFFER * 10);
 
 // Callback function for PortAudio
 static int paCallback(
@@ -29,10 +27,7 @@ static int paCallback(
         frame[i] = {samples[i], 0.0};
     }
 
-    {
-        std::lock_guard lock(queueMutex);
-        fftQueue.push(frame);
-    }
+    audioBuffer.write(frame.data(), framesPerBuffer);
 
     return paContinue;
 }
@@ -40,13 +35,13 @@ static int paCallback(
 
 void processFFT(){
     while (isRecording){
-        CArray frame;
-        {
-            std::lock_guard lock(queueMutex);
-            if (fftQueue.empty()) continue;
-            frame = fftQueue.front();
-            fftQueue.pop();
+        if (audioBuffer.available() < FRAMES_PER_BUFFER) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            continue;
         }
+
+        CArray frame(FRAMES_PER_BUFFER);
+        audioBuffer.read(frame.data(), FRAMES_PER_BUFFER);
 
         applyFlatTopWindow(frame);
         fft(frame);
