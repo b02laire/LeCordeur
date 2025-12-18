@@ -39,7 +39,7 @@ void fft(CArray& samples){
     fft(even);
     fft(odd);
 
-    for (int k = 0; k < N / 2 - 1; k++){
+    for (int k = 0; k <= N / 2 - 1; k++){
         //Complex t = exp(-2*M_1_PI*k/N) * odd[k];
         Complex t = odd[k] * std::polar(1.0, -2.0 * M_PI * k / N);
         samples[k] = even[k] + t;
