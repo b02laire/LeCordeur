@@ -43,7 +43,7 @@ void processFFT(){
         CArray frame(FRAMES_PER_BUFFER);
         audioBuffer.read(frame.data(), FRAMES_PER_BUFFER);
 
-        applyFlatTopWindow(frame);
+        applyHannWindow(frame);
         fft(frame);
 
         // Find the fundamental frequency (peak magnitude)
@@ -59,8 +59,18 @@ void processFFT(){
             }
         }
 
+        // Parabolic interpolation for sub-bin precision
+        double refinedBin = maxIndex;
+        if (maxIndex > 0 && maxIndex < frame.size() / 2 - 1) {
+            double alpha = std::abs(frame[maxIndex - 1]);
+            double beta = std::abs(frame[maxIndex]);
+            double gamma = std::abs(frame[maxIndex + 1]);
+            double p = 0.5 * (alpha - gamma) / (alpha - 2.0 * beta + gamma);
+            refinedBin = maxIndex + p;
+        }
+
         // Convert bin index to frequency
-        double fundamentalFreq = maxIndex * SAMPLE_RATE / frame.size();
+        double fundamentalFreq = refinedBin * SAMPLE_RATE / frame.size();
 
         std::cout << "\rFundamental: " << fundamentalFreq << " Hz           ";
         std::cout.flush();
