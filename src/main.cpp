@@ -33,6 +33,23 @@ static int paCallback(
 }
 
 
+std::string frequencyToNote(double freq) {
+    if (freq < 20.0) return "---";
+
+    // A4 = 440 Hz, calculate semitones from A4
+    double semitones = 12.0 * std::log2(freq / 440.0);
+    int nearestSemitone = static_cast<int>(std::round(semitones));
+
+    // Note names starting from A
+    const std::string noteNames[] = {"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"};
+    int noteIndex = ((nearestSemitone % 12) + 12) % 12;
+
+    // Calculate octave (A4 is octave 4)
+    int octave = 4 + (nearestSemitone + (nearestSemitone < 0 ? -11 : 0)) / 12;
+
+    return noteNames[noteIndex] + std::to_string(octave);
+}
+
 void processFFT(){
     while (isRecording){
         if (audioBuffer.available() < FRAMES_PER_BUFFER) {
@@ -71,8 +88,9 @@ void processFFT(){
 
         // Convert bin index to frequency
         double fundamentalFreq = refinedBin * SAMPLE_RATE / frame.size();
+        std::string noteName = frequencyToNote(fundamentalFreq);
 
-        std::cout << "\rFundamental: " << fundamentalFreq << " Hz           ";
+        std::cout << "\rNote: " << noteName << " (" << fundamentalFreq << " Hz)           ";
         std::cout.flush();
     }
 }

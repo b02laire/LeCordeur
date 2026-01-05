@@ -1,9 +1,12 @@
 # LeCordeur
 
-A simple guitar tuner written in C++.
+A guitar tuner written in C++.
 
-To use this project, you need to install PortAudio.  
-On Linux, refer to this [link](https://www.portaudio.com/docs/v19-doxydocs/compile_linux.html)
+## Requirements
 
-Currently using a somewhat naive fundamental frequency detection algorithm.  
-I plan on adding better buffer windowing and filtering.  
+PortAudio library. On Linux, refer to the [installation guide](https://www.portaudio.com/docs/v19-doxydocs/compile_linux.html).
+
+## References
+Ressources I found useful while developing this project:
+- [Parabolic Interpolation](https://ccrma.stanford.edu/~jos/SpecAnal/Parabolic_Interpolation.html)
+- [Musical Note Frequencies](https://www.phys.unsw.edu.au/jw/notes.html)
