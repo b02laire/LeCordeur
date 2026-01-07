@@ -63,14 +63,17 @@ void processFFT(){
         applyHannWindow(frame);
         fft(frame);
 
-        // Find the fundamental frequency (peak magnitude)
-        double maxMagnitude = 0.0;
-        int maxIndex = 0;
+        // Find peak in guitar frequency range (80-1200 Hz)
+        int minBin = static_cast<int>(80.0 * frame.size() / SAMPLE_RATE);
+        int maxBin = static_cast<int>(1200.0 * frame.size() / SAMPLE_RATE);
+        maxBin = std::min(maxBin, static_cast<int>(frame.size() / 2));
 
-        for (int i = 1; i < frame.size() / 2; i++){
-            // Start at 1 to skip DC, go to Nyquist
+        double maxMagnitude = 0.0;
+        int maxIndex = minBin;
+
+        for (int i = minBin; i < maxBin; i++) {
             double magnitude = std::abs(frame[i]);
-            if (magnitude > maxMagnitude){
+            if (magnitude > maxMagnitude) {
                 maxMagnitude = magnitude;
                 maxIndex = i;
             }
