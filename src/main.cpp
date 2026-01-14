@@ -79,22 +79,26 @@ void processFFT(){
             }
         }
 
-        // Parabolic interpolation for sub-bin precision
-        double refinedBin = maxIndex;
-        if (maxIndex > 0 && maxIndex < frame.size() / 2 - 1) {
-            double alpha = std::abs(frame[maxIndex - 1]);
-            double beta = std::abs(frame[maxIndex]);
-            double gamma = std::abs(frame[maxIndex + 1]);
-            double p = 0.5 * (alpha - gamma) / (alpha - 2.0 * beta + gamma);
-            refinedBin = maxIndex + p;
+        // Only display if magnitude is above threshold
+        const double MAGNITUDE_THRESHOLD = 0.01;
+        if (maxMagnitude > MAGNITUDE_THRESHOLD) {
+            // Parabolic interpolation for sub-bin precision
+            double refinedBin = maxIndex;
+            if (maxIndex > 0 && maxIndex < frame.size() / 2 - 1) {
+                double alpha = std::abs(frame[maxIndex - 1]);
+                double beta = std::abs(frame[maxIndex]);
+                double gamma = std::abs(frame[maxIndex + 1]);
+                double p = 0.5 * (alpha - gamma) / (alpha - 2.0 * beta + gamma);
+                refinedBin = maxIndex + p;
+            }
+
+            // Convert bin index to frequency
+            double fundamentalFreq = refinedBin * SAMPLE_RATE / frame.size();
+            std::string noteName = frequencyToNote(fundamentalFreq);
+
+            std::cout << "\rNote: " << noteName << " (" << fundamentalFreq << " Hz)           ";
+            std::cout.flush();
         }
-
-        // Convert bin index to frequency
-        double fundamentalFreq = refinedBin * SAMPLE_RATE / frame.size();
-        std::string noteName = frequencyToNote(fundamentalFreq);
-
-        std::cout << "\rNote: " << noteName << " (" << fundamentalFreq << " Hz)           ";
-        std::cout.flush();
     }
 }
 
