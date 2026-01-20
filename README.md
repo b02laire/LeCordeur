@@ -1,6 +1,7 @@
 # LeCordeur
 
 ![Tests](https://github.com/b02laire/LeCordeur/actions/workflows/tests.yml/badge.svg)
+![Release](https://img.shields.io/github/v/release/b02laire/LeCordeur)
 
 A guitar tuner written in C++.
 
