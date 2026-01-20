@@ -7,6 +7,7 @@
 #include "config.hpp"
 #include "dsp.hpp"
 #include "ring_buffer.hpp"
+#include "note_detection.hpp"
 
 
 ring_buffer audioBuffer(FRAMES_PER_BUFFER * 10);
@@ -32,23 +33,6 @@ static int paCallback(
     return paContinue;
 }
 
-
-std::string frequencyToNote(double freq) {
-    if (freq < 20.0) return "---";
-
-    // A4 = 440 Hz, calculate semitones from A4
-    double semitones = 12.0 * std::log2(freq / 440.0);
-    int nearestSemitone = static_cast<int>(std::round(semitones));
-
-    // Note names starting from A
-    const std::string noteNames[] = {"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"};
-    int noteIndex = ((nearestSemitone % 12) + 12) % 12;
-
-    // Calculate octave (A4 is octave 4)
-    int octave = 4 + (nearestSemitone + (nearestSemitone < 0 ? -11 : 0)) / 12;
-
-    return noteNames[noteIndex] + std::to_string(octave);
-}
 
 void processFFT(){
     while (isRecording){
