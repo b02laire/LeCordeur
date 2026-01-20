@@ -4,7 +4,7 @@
 void applyHannWindow(CArray& samples){
     for (int i = 0; i < samples.size(); i++){
         double multiplier = 0.5 * (1 - cos(
-            2 * M_PI * i / (FRAMES_PER_BUFFER - 1)));
+            2 * M_PI * i / (samples.size() - 1)));
         samples[i] *= multiplier;
     }
 }
