@@ -1,5 +1,7 @@
 # LeCordeur
 
+![Tests](https://github.com/b02laire/LeCordeur/actions/workflows/tests.yml/badge.svg)
+
 A guitar tuner written in C++.
 
 ## Requirements
