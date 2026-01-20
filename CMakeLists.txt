@@ -15,9 +15,9 @@ add_executable(LeCordeur
         src/config.cpp
         src/ring_buffer.cpp
         src/note_detection.cpp)
+target_include_directories(LeCordeur PRIVATE include ${PortAudio_INCLUDE_DIRS})
+target_link_directories(LeCordeur PRIVATE ${PortAudio_LIBRARY_DIRS})
 target_link_libraries(LeCordeur PRIVATE ${PortAudio_LIBRARIES})
-target_include_directories(LeCordeur PRIVATE ${PortAudio_INCLUDE_DIRS}
-        LeCordeur PRIVATE include)
 
 # Enable testing
 enable_testing()
