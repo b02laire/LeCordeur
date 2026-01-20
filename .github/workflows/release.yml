@@ -12,7 +12,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -24,19 +24,43 @@ jobs:
 
     - name: Install dependencies (macOS)
       if: matrix.os == 'macos-latest'
-      run: brew install portaudio googletest
+      run: |
+        brew install portaudio googletest pkg-config
+
+    - name: Install dependencies (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        vcpkg install portaudio gtest
+        echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" >> $env:GITHUB_ENV
 
     - name: Configure CMake
       run: cmake -B build
+      env:
+        PKG_CONFIG_PATH: /opt/homebrew/lib/pkgconfig
+        CMAKE_TOOLCHAIN_FILE: ${{ matrix.os == 'windows-latest' && '$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake' || '' }}
 
     - name: Build
-      run: cmake --build build
+      run: cmake --build build --config Release
 
     - name: Run tests
-      run: cd build && ctest --output-on-failure
+      run: cd build && ctest --output-on-failure -C Release
+
+    - name: Package binary (Unix)
+      if: matrix.os != 'windows-latest'
+      run: |
+        mkdir -p artifact
+        cp build/LeCordeur artifact/
+
+    - name: Package binary (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: pwsh
+      run: |
+        mkdir artifact
+        cp build/Release/LeCordeur.exe artifact/
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: lecordeur-${{ matrix.os }}
-        path: build/LeCordeur
+        path: artifact/
+        if-no-files-found: error
