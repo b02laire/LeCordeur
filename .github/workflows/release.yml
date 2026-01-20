@@ -33,11 +33,15 @@ jobs:
         vcpkg install portaudio gtest
         echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" >> $env:GITHUB_ENV
 
-    - name: Configure CMake
+    - name: Configure CMake (Unix)
+      if: matrix.os != 'windows-latest'
       run: cmake -B build
       env:
         PKG_CONFIG_PATH: /opt/homebrew/lib/pkgconfig
-        CMAKE_TOOLCHAIN_FILE: ${{ matrix.os == 'windows-latest' && '$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake' || '' }}
+
+    - name: Configure CMake (Windows)
+      if: matrix.os == 'windows-latest'
+      run: cmake -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
 
     - name: Build
       run: cmake --build build --config Release
