@@ -68,3 +68,11 @@ jobs:
         name: lecordeur-${{ matrix.os }}
         path: artifact/
         if-no-files-found: error
+
+    - name: Upload Release Asset
+      if: github.event_name == 'release'
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          build/LeCordeur
+          build/Release/LeCordeur.exe
