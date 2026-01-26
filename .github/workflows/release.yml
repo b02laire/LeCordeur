@@ -74,5 +74,5 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: |
-          build/LeCordeur
-          build/Release/LeCordeur.exe
+          ${{ matrix.os != 'windows-latest' && 'build/LeCordeur' || '' }}
+          ${{ matrix.os == 'windows-latest' && 'build/Release/LeCordeur.exe' || '' }}
