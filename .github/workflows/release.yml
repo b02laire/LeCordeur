@@ -52,29 +52,29 @@ jobs:
     - name: Package binary (Unix)
       if: matrix.os != 'windows-latest'
       run: |
-        mkdir -p artifact
-        cp build/LeCordeur artifact/
+        mkdir artifact
+        cp build/LeCordeur-${CMAKE_SYSTEM_NAME} artifact/
 
     - name: Package binary (Windows)
       if: matrix.os == 'windows-latest'
       shell: pwsh
       run: |
         mkdir artifact
-        cp build/Release/LeCordeur.exe artifact/
+        cp build/Release/LeCordeur-${CMAKE_SYSTEM_NAME}.exe artifact/
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: lecordeur-${{ matrix.os }}
-        path: artifact/
-        if-no-files-found: error
+- name: Upload artifact
+  uses: actions/upload-artifact@v4
+  with:
+    name: lecordeur-${{ matrix.os }}
+    path: artifact/
+    if-no-files-found: error
 
-    - name: Upload Release Asset
-      if: github.event_name == 'release'
-      uses: softprops/action-gh-release@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GH_TOKEN_SECRET }}
-      with:
-        files: |
-          ${{ matrix.os != 'windows-latest' && 'build/LeCordeur' || '' }}
-          ${{ matrix.os == 'windows-latest' && 'build/Release/LeCordeur.exe' || '' }}
+- name: Upload Release Asset
+  if: github.event_name == 'release'
+  uses: softprops/action-gh-release@v2
+  env:
+    GITHUB_TOKEN: ${{ secrets.GH_TOKEN_SECRET }}
+  with:
+    files: |
+      artifact/lecordeur-${{ matrix.os }}
+      artifact/lecordeur-${{ matrix.os }}.exe

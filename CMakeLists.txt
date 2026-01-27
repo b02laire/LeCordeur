@@ -15,17 +15,27 @@ else()
 endif()
 
 # Main executable
-add_executable(LeCordeur
-        src/main.cpp
-        src/dsp.cpp
-        src/config.cpp
-        src/ring_buffer.cpp
-        src/note_detection.cpp)
-target_include_directories(LeCordeur PRIVATE include ${PortAudio_INCLUDE_DIRS})
-if(NOT WIN32)
-    target_link_directories(LeCordeur PRIVATE ${PortAudio_LIBRARY_DIRS})
+if(WIN32)
+    add_executable(LeCordeur-${CMAKE_SYSTEM_NAME}
+            src/main.cpp
+            src/dsp.cpp
+            src/config.cpp
+            src/ring_buffer.cpp
+            src/note_detection.cpp)
+else()
+    add_executable(LeCordeur-${CMAKE_SYSTEM_NAME}
+            src/main.cpp
+            src/dsp.cpp
+            src/config.cpp
+            src/ring_buffer.cpp
+            src/note_detection.cpp)
 endif()
-target_link_libraries(LeCordeur PRIVATE ${PORTAUDIO_LIBRARIES})
+
+target_include_directories(LeCordeur-${CMAKE_SYSTEM_NAME} PRIVATE include ${PortAudio_INCLUDE_DIRS})
+if(NOT WIN32)
+    target_link_directories(LeCordeur-${CMAKE_SYSTEM_NAME} PRIVATE ${PortAudio_LIBRARY_DIRS})
+endif()
+target_link_libraries(LeCordeur-${CMAKE_SYSTEM_NAME} PRIVATE ${PORTAUDIO_LIBRARIES})
 
 # Enable testing
 enable_testing()
