@@ -72,6 +72,8 @@ jobs:
     - name: Upload Release Asset
       if: github.event_name == 'release'
       uses: softprops/action-gh-release@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_SECRET }}
       with:
         files: |
           ${{ matrix.os != 'windows-latest' && 'build/LeCordeur' || '' }}
