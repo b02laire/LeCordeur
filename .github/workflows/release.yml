@@ -1,80 +1,77 @@
 name: Multi-Platform Build
 
 on:
-  push:
-    tags:
-      - 'v*'  # Triggers on tags like v1.0, v2.1.3, etc.
   release:
-    types: [created]
+    types: [ created ]
   workflow_dispatch:  # Allows manual trigger from GitHub UI
 
 jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Install dependencies (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      run: sudo apt-get update && sudo apt-get install -y libportaudio2 portaudio19-dev libgtest-dev cmake
+      - name: Install dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y libportaudio2 portaudio19-dev libgtest-dev cmake
 
-    - name: Install dependencies (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install portaudio googletest pkg-config
+      - name: Install dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install portaudio googletest pkg-config
 
-    - name: Install dependencies (Windows)
-      if: matrix.os == 'windows-latest'
-      run: |
-        vcpkg install portaudio gtest
-        echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" >> $env:GITHUB_ENV
+      - name: Install dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          vcpkg install portaudio gtest
+          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" >> $env:GITHUB_ENV
 
-    - name: Configure CMake (Unix)
-      if: matrix.os != 'windows-latest'
-      run: cmake -B build
-      env:
-        PKG_CONFIG_PATH: /opt/homebrew/lib/pkgconfig
+      - name: Configure CMake (Unix)
+        if: matrix.os != 'windows-latest'
+        run: cmake -B build
+        env:
+          PKG_CONFIG_PATH: /opt/homebrew/lib/pkgconfig
 
-    - name: Configure CMake (Windows)
-      if: matrix.os == 'windows-latest'
-      run: cmake -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+      - name: Configure CMake (Windows)
+        if: matrix.os == 'windows-latest'
+        run: cmake -B build -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
 
-    - name: Build
-      run: cmake --build build --config Release
+      - name: Build
+        run: cmake --build build --config Release
 
-    - name: Run tests
-      run: cd build && ctest --output-on-failure -C Release
+      - name: Run tests
+        run: cd build && ctest --output-on-failure -C Release
 
-    - name: Package binary (Unix)
-      if: matrix.os != 'windows-latest'
-      run: |
-        mkdir artifact
-        cp build/LeCordeur-${CMAKE_SYSTEM_NAME} artifact/
+      - name: Package binary (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          mkdir artifact
+          cp build/LeCordeur-${CMAKE_SYSTEM_NAME} artifact/
 
-    - name: Package binary (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: pwsh
-      run: |
-        mkdir artifact
-        cp build/Release/LeCordeur-${CMAKE_SYSTEM_NAME}.exe artifact/
+      - name: Package binary (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          mkdir artifact
+          cp build/Release/LeCordeur-${CMAKE_SYSTEM_NAME}.exe artifact/
 
-- name: Upload artifact
-  uses: actions/upload-artifact@v4
-  with:
-    name: lecordeur-${{ matrix.os }}
-    path: artifact/
-    if-no-files-found: error
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lecordeur-${{ matrix.os }}
+          path: artifact/
+          if-no-files-found: error
 
-- name: Upload Release Asset
-  if: github.event_name == 'release'
-  uses: softprops/action-gh-release@v2
-  env:
-    GITHUB_TOKEN: ${{ secrets.GH_TOKEN_SECRET }}
-  with:
-    files: |
-      artifact/lecordeur-${{ matrix.os }}
-      artifact/lecordeur-${{ matrix.os }}.exe
+      - name: Upload Release Asset
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_SECRET }}
+        with:
+          files: |
+            artifact/lecordeur-${{ matrix.os }}
+            artifact/lecordeur-${{ matrix.os }}.exe
